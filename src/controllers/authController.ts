@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { hashPassword, comparePasswords } from "../middleware/encrypt";
-import { findUserByusername, createUser } from "../models/userModel";
+import { findUserByusername, createUser } from "../models/authModel";
 
 export const registerUser = async (req: Request, res: Response): Promise<void> => {
   const { username, password } = req.body;

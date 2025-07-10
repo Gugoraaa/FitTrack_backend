@@ -7,6 +7,7 @@ import GoalRoutes from "./routes/goals";
 import WorkoutRoutes from "./routes/workout";
 import NutritionRoutes from "./routes/nutrition";
 import MeasurementRoutes from "./routes/measurements";  
+import ProfileRoutes from "./routes/profile"; 
 
 dotenv.config();
 
@@ -33,6 +34,8 @@ app.use("/goals", GoalRoutes);
 app.use("/workouts", WorkoutRoutes);
 app.use("/nutrition", NutritionRoutes);
 app.use("/measurements", MeasurementRoutes);  
+app.use("/profile", ProfileRoutes);
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

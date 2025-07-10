@@ -32,3 +32,16 @@ export async function getMeasurementsByUserDb(userId: number) {
   const result = await pool.query(query, values);
   return result.rows;
 }
+
+export async function getLatestMeasurementsByUserDb(userId: number) {
+  const query = `
+    SELECT * FROM body_measurements
+    WHERE user_id = $1 
+    ORDER BY date DESC
+    LIMIT 1
+  `;
+  const values = [userId];
+  
+  const result = await pool.query(query, values);
+  return result.rows[0];
+}

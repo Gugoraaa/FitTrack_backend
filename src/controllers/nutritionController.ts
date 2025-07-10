@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { fetchNutrition } from "../config/nutritionix";
 import { getDailyCaloriesDb,addOrUpdateCaloriesDb, getCaloriesGoalDb,getFoodEntriesTodayDb,addFoodEntry } from "../models/nutritionModel";
-import { promises } from "dns";
+
 
 
 const today = new Date().toISOString().split("T")[0]; // 'YYYY-MM-DD'

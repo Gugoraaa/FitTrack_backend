@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import { 
   addMeasurementsByUserDb, 
   hasNotSubmittedMeasurementsToday,
-  getMeasurementsByUserDb
+  getMeasurementsByUserDb,
+  getLatestMeasurementsByUserDb
 } from "../models/measurementsModel";
 
 
@@ -46,3 +47,21 @@ export const getMeasurements = async (req: Request, res: Response): Promise<void
     res.status(500).json({ message: "Server error." });
   }
 };
+
+export const getLatestMeasurements = async (req: Request, res: Response): Promise<void> => {
+  const { userId } = req.query;
+  const parsedUserId = parseInt(userId as string); ;
+
+  if (!userId) {
+    res.status(400).json({ message: "User ID is required." });
+    return;
+  }
+
+  try {
+    const latestMeasurements = await getLatestMeasurementsByUserDb(parsedUserId);
+    res.status(200).json(latestMeasurements);
+  } catch (error) {
+    console.error("Error fetching latest measurements:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+} 
