@@ -1,5 +1,6 @@
 import pool from "../config/database";
 
+
 // Check if a user with this email already exists
 export const findUserByusername = async (username: string) => {
   const result = await pool.query("SELECT * FROM users WHERE username = $1", [username]);

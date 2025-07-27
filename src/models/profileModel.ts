@@ -19,3 +19,11 @@ export async function updateCalorieGoalDb(userId: number, newGoal: number) {
   const result = await pool.query(query, [userId, newGoal]);
   return result.rows[0];
 }
+
+export async function getUserDataDb(user_id:number) {
+  const query= `SELECT username,created_at,daily_calorie_goal FROM users WHERE id=$1`;
+  const result = await pool.query(query, [user_id ]);
+  return result.rows[0];
+  
+  
+}

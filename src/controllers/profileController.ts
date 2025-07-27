@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import {updateUsernameDb, updateCalorieGoalDb} from "../models/profileModel";
+import {updateUsernameDb, updateCalorieGoalDb,getUserDataDb} from "../models/profileModel";
 import { findUserByusername } from "../models/authModel";
 
 export const updateUsername = async (req: Request, res: Response): Promise<void> => {
@@ -46,3 +46,32 @@ export const updateCalorieGoal = async (req: Request, res: Response): Promise<vo
         res.status(500).json({ message: "Server error" });
     }
 }
+
+export const getUserData = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userID } = req.body;
+
+    if (!userID) {
+      res.status(400).json({ message: "Missing userID" });
+      return;
+    }
+
+    const data = await getUserDataDb(userID);
+
+    if (!data) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const User = {
+      username: data.username,
+      created_at: data.created_at,
+      daily_calorie_goal: data.daily_calorie_goal,
+    };
+
+    res.status(200).json(User);
+  } catch (error) {
+    console.error("Error in getUserData:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

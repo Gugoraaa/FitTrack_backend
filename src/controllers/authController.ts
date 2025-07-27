@@ -1,11 +1,27 @@
 import { Request, Response } from "express";
 import { hashPassword, comparePasswords } from "../middleware/encrypt";
 import { findUserByusername, createUser } from "../models/authModel";
+import type { UserWithPassword, PublicUser } from "../types/types";
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 
-export const registerUser = async (req: Request, res: Response): Promise<void> => {
+dotenv.config();
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict" as const,
+};
+
+const JWT_KEY: string | undefined = process.env.JWT_SECRET_KEY;
+
+export const registerUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { username, password } = req.body;
 
-  if (!username  || !password) {
+  if (!username || !password) {
     res.status(400).json({ message: "All fields are required" });
     return;
   }
@@ -36,6 +52,9 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
 };
 
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
+  
+
+  
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -44,7 +63,20 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const user = await findUserByusername(username);
+    const userData = await findUserByusername(username);
+    const user: UserWithPassword = {
+      id: userData.id,
+      username: userData.username,
+      password: userData.password,
+      created_at: userData.created_at,
+      daily_calorie_goal: userData.daily_calorie_goal,
+    };
+    const publicUser: PublicUser = {
+      id: user.id,
+      username: user.username,
+      created_at: user.created_at,
+      daily_calorie_goal: user.daily_calorie_goal,
+    };
 
     if (!user) {
       res.status(401).json({ message: "Invalid credentials" });
@@ -58,18 +90,49 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    res.status(200).json({
-      message: "Login successful",
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        created_at: user.created_at,
-        daily_calorie_goal: user.daily_calorie_goal
-      },
-    });
+    const token = jwt.sign(
+      { id: user.id, username: user.username },
+      JWT_KEY as string,
+      {
+        expiresIn: "1h",
+      }
+    );
+    res
+      .cookie("access_token", token, { ...cookieOptions, maxAge: 3600000 })
+      .status(200)
+      .json({
+        message: "Login successful",
+        publicUser,
+        token,
+      });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Server error during login" });
+  }
+};
+
+export const logOut = (req: Request, res: Response): void => {
+  res.clearCookie("access_token", cookieOptions);
+  res.status(200).json({ message: "Logout successful" });
+};
+
+export const checkAuth = async (req: Request, res: Response): Promise<void> => {
+  
+  const token = req.cookies.access_token;
+
+  if (!token) {
+    // res.status(401).json({ message: "Not authenticated" });
+    console.log("NO ENCONTRE LA TOKEN")
+    return;
+  }
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY!);
+    res.status(200).json({ authenticated: true, user: decoded });
+    return
+  } catch (err) {
+    res.status(401).json({ message: "Invalid token" });
+    console.log(err)
+    return 
   }
 };

@@ -19,7 +19,6 @@ export const addGoal = async (req: Request, res: Response): Promise<void> => {
   }
 };
 export const getUserGoals = async (req: Request, res: Response): Promise<void> => {
-    
     const { userId } = req.body;
 
 
