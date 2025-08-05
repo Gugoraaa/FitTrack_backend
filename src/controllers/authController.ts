@@ -1,7 +1,11 @@
 import { Request, Response } from "express";
 import { hashPassword, comparePasswords } from "../middleware/encrypt";
 import { findUserByusername, createUser } from "../models/authModel";
-import type { UserWithPassword, PublicUser } from "../types/types";
+import {
+  loginSchema,
+  type PublicUser,
+  type UserWithPassword,
+} from "../schemas/user.schema";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 
@@ -15,21 +19,17 @@ const cookieOptions = {
 
 const JWT_KEY: string | undefined = process.env.JWT_SECRET_KEY;
 
-export const registerUser = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const { username, password } = req.body;
-
-  if (!username || !password) {
-    res.status(400).json({ message: "All fields are required" });
+export const registerUser = async (req: Request,res: Response): Promise<void> => {
+  const parsed = loginSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({
+      message: "Validation failed",
+      errors: parsed.error.issues,
+    });
     return;
   }
 
-  if (password.length < 8) {
-    res.status(400).json({ message: "Password must be at least 8 characters" });
-    return;
-  }
+  const { username, password } = parsed.data;
 
   try {
     const existingUser = await findUserByusername(username);
@@ -52,18 +52,24 @@ export const registerUser = async (
 };
 
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
-  
-
-  
-  const { username, password } = req.body;
-
-  if (!username || !password) {
-    res.status(400).json({ message: "username and password are required" });
+  const parsed = loginSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({
+      message: "Validation failed",
+      errors: parsed.error.issues,
+    });
     return;
   }
 
+  const { username, password } = parsed.data;
+
   try {
     const userData = await findUserByusername(username);
+
+    if (!userData) {
+      res.status(401).json({ message: "Invalid credentials" });
+      return;
+    }
     const user: UserWithPassword = {
       id: userData.id,
       username: userData.username,
@@ -71,17 +77,6 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
       created_at: userData.created_at,
       daily_calorie_goal: userData.daily_calorie_goal,
     };
-    const publicUser: PublicUser = {
-      id: user.id,
-      username: user.username,
-      created_at: user.created_at,
-      daily_calorie_goal: user.daily_calorie_goal,
-    };
-
-    if (!user) {
-      res.status(401).json({ message: "Invalid credentials" });
-      return;
-    }
 
     const isMatch = await comparePasswords(password, user.password);
 
@@ -97,6 +92,14 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         expiresIn: "1h",
       }
     );
+
+    const publicUser: PublicUser = {
+      id: user.id,
+      username: user.username,
+      created_at: user.created_at,
+      
+    };
+
     res
       .cookie("access_token", token, { ...cookieOptions, maxAge: 3600000 })
       .status(200)
@@ -117,22 +120,20 @@ export const logOut = (req: Request, res: Response): void => {
 };
 
 export const checkAuth = async (req: Request, res: Response): Promise<void> => {
-  
   const token = req.cookies.access_token;
 
   if (!token) {
-    // res.status(401).json({ message: "Not authenticated" });
-    console.log("NO ENCONTRE LA TOKEN")
+    console.log("NO ENCONTRE LA TOKEN");
     return;
   }
-  
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY!);
     res.status(200).json({ authenticated: true, user: decoded });
-    return
+    return;
   } catch (err) {
     res.status(401).json({ message: "Invalid token" });
-    console.log(err)
-    return 
+    console.log(err);
+    return;
   }
 };

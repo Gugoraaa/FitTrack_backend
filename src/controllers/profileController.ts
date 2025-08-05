@@ -67,6 +67,7 @@ export const getUserData = async (req: Request, res: Response): Promise<void> =>
       username: data.username,
       created_at: data.created_at,
       daily_calorie_goal: data.daily_calorie_goal,
+      userID: userID
     };
 
     res.status(200).json(User);
