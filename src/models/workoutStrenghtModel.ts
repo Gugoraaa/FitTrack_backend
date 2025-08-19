@@ -1,4 +1,3 @@
-// models/strengthWorkoutModel.ts
 import pool from "../config/database";
 
 type Exercise = {
@@ -60,7 +59,6 @@ export const getLastStrengthSessions = async (user_id: number): Promise<any[]> =
 
   const sessions = sessionResult.rows;
 
-  // Para cada sesión, obtenemos los ejercicios correspondientes
   const sessionsWithExercises = await Promise.all(
     sessions.map(async (session) => {
       const exercisesResult = await pool.query(
@@ -96,7 +94,6 @@ export const getStrengthSessions = async (user_id: number): Promise<any[]> => {
 
   const sessions = sessionResult.rows;
 
-  // Para cada sesión, obtenemos los ejercicios correspondientes
   const sessionsWithExercises = await Promise.all(
     sessions.map(async (session) => {
       const exercisesResult = await pool.query(

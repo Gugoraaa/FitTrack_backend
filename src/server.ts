@@ -10,6 +10,7 @@ import WorkoutRoutes from "./routes/workout";
 import NutritionRoutes from "./routes/nutrition";
 import MeasurementRoutes from "./routes/measurements";  
 import ProfileRoutes from "./routes/profile"; 
+import SummaryRoutes from "./routes/summary"
 
 dotenv.config();
 
@@ -20,8 +21,6 @@ const PORT = 3000;
 
 const allowedOrigin = process.env.ALLOWED_ORIGIN ;
 
-
-//Middleware
 app.use(
   cors({
     origin: allowedOrigin,
@@ -41,6 +40,7 @@ app.use("/workouts", WorkoutRoutes);
 app.use("/nutrition", NutritionRoutes);
 app.use("/measurements", MeasurementRoutes);  
 app.use("/profile", ProfileRoutes);
+app.use("/summary",SummaryRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
