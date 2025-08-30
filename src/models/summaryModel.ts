@@ -46,3 +46,14 @@ export const getStrengthSessionsByID= async (session_id: number): Promise<any> =
   
 
 }
+export async function getLastGoalByID(user_id: number) {
+  const result = await pool.query(
+    `SELECT * FROM goals
+     WHERE user_id = $1
+     ORDER BY end_date ASC
+     LIMIT 1 `,
+
+    [user_id]
+  );
+  return result.rows;
+}
