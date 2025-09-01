@@ -55,5 +55,5 @@ export async function getLastGoalByID(user_id: number) {
 
     [user_id]
   );
-  return result.rows;
+  return result.rows[0];
 }
