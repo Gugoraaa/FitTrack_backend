@@ -6,7 +6,6 @@ import {
   getLastGoalByID,
 } from "../models/summaryModel";
 import { cardioSchema, strengthSchema } from "../schemas/sessions.schemas";
-import { Numeric } from "zod/v4/core/util.cjs";
 
 export const getLastSession = async (
   req: Request,
@@ -72,8 +71,6 @@ export const getLastSession = async (
     if (type == "strength") {
       const item = await getStrengthSessionsByID(latest.id);
       latest.exercises = item;
-
-      console.log(latest);
     }
     res.status(200).json({
       latest,
